@@ -200,7 +200,7 @@
         if (doc.path === state.currentDocPath) {
           link.classList.add('active');
         }
-        link.href = `/${doc.path}`;
+        link.href = getDocLink(doc.path);
 
         const isDone = state.completedDocs.has(doc.path);
 
@@ -248,6 +248,30 @@
     return processed;
   }
 
+  // Base path & repository detection for GitHub Pages and subpaths
+  function getRepoPrefix() {
+    if (window.location.hostname.endsWith('github.io')) {
+      const match = window.location.pathname.match(/^\/([^\/]+)/);
+      if (match) {
+        return match[1]; // e.g., "Angular-interview-app"
+      }
+    }
+    return '';
+  }
+
+  function getBaseUrl() {
+    const repo = getRepoPrefix();
+    return repo ? `/${repo}` : '';
+  }
+
+  function getDocLink(docPath) {
+    const base = getBaseUrl();
+    if (window.location.hostname.endsWith('github.io')) {
+      return `${base}/?doc=${encodeURIComponent(docPath)}`;
+    }
+    return `${base}/${docPath}`;
+  }
+
   // Path resolution and routing utilities
   function getDocFromLocation() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -256,6 +280,11 @@
     }
 
     let pathname = decodeURIComponent(window.location.pathname).replace(/^\//, '');
+    const repo = getRepoPrefix();
+    if (repo && pathname.startsWith(repo)) {
+      pathname = pathname.substring(repo.length).replace(/^\//, '');
+    }
+
     if (pathname && pathname !== 'index.html' && pathname !== '') {
       if (pathname.endsWith('.md')) {
         return pathname;
@@ -325,10 +354,11 @@
   async function loadDocumentContent(docPath) {
     const cleanPath = (docPath || '').replace(/^\//, '');
 
-    // 1. If running on local server, try live fetch first so disk edits appear instantly!
+    // 1. If running on local server or web host, try live fetch first so disk edits appear instantly!
     if (window.location.protocol.startsWith('http')) {
       try {
-        const fetchUrl = `/${cleanPath}?raw=1`;
+        const base = getBaseUrl();
+        const fetchUrl = `${base}/${cleanPath}?raw=1`;
         const res = await fetch(fetchUrl, {
           headers: {
             'Accept': 'text/markdown, text/plain, */*'
@@ -336,7 +366,8 @@
         });
         if (res.ok) {
           const text = await res.text();
-          if (text && text.trim().length > 0) {
+          // Ensure it's not the HTML fallback page
+          if (text && text.trim().length > 0 && !text.trim().startsWith('<!DOCTYPE html>') && !text.trim().startsWith('<html')) {
             return text;
           }
         }
@@ -615,9 +646,16 @@
   function navigateTo(docPath, hash = '') {
     const cleanPath = (docPath || 'README.md').replace(/^\//, '');
     const cleanHash = hash ? (hash.startsWith('#') ? hash : '#' + hash) : '';
-    const targetUrl = '/' + cleanPath + cleanHash;
+    const base = getBaseUrl();
 
-    if (window.location.pathname + window.location.hash !== targetUrl) {
+    let targetUrl;
+    if (window.location.hostname.endsWith('github.io')) {
+      targetUrl = `${base}/?doc=${encodeURIComponent(cleanPath)}${cleanHash}`;
+    } else {
+      targetUrl = `${base}/${cleanPath}${cleanHash}`;
+    }
+
+    if (window.location.pathname + window.location.search + window.location.hash !== targetUrl) {
       history.pushState(null, '', targetUrl);
     }
     renderDocument(cleanPath, cleanHash);
@@ -698,7 +736,7 @@
     matches.slice(0, 15).forEach((item, index) => {
       const a = document.createElement('a');
       a.className = `search-result-item ${index === 0 ? 'selected' : ''}`;
-      a.href = `/${item.doc.path}`;
+      a.href = getDocLink(item.doc.path);
       a.innerHTML = `
         <span class="result-category">${item.doc.sectionTitle || 'Topic'}</span>
         <span class="result-title">${highlightQuery(item.doc.title, q)}</span>
@@ -811,6 +849,7 @@
 
     // Brand Link click to home
     if (elements.brandLink) {
+      elements.brandLink.href = getDocLink('README.md');
       elements.brandLink.addEventListener('click', (e) => {
         e.preventDefault();
         navigateTo('README.md');
@@ -819,7 +858,7 @@
 
     // Share / Copy Link
     elements.shareLinkBtn.addEventListener('click', () => {
-      const shareUrl = `${window.location.origin}/${state.currentDocPath}`;
+      const shareUrl = `${window.location.origin}${getDocLink(state.currentDocPath)}`;
       navigator.clipboard.writeText(shareUrl).then(() => {
         showToast('Document link copied to clipboard!', '🔗');
       });
