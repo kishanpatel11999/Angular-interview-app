@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angular Senior Interview Prep — Knowledge Base & Doc Viewer</title>
+  <meta name="description" content="Production-oriented, interactive documentation viewer for Senior Angular Interview Preparation, covering modern Angular 18–22, Signals, RxJS, Security, and System Design.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 250 250'><polygon fill='%23DD0031' points='125,30 125,30 125,30 31.9,63.2 46.1,186.3 125,230 125,230 125,230 203.9,186.3 218.1,63.2'/><polygon fill='%23C3002F' points='125,30 125,52.2 125,52.1 125,153.4 125,153.4 125,230 125,230 203.9,186.3 218.1,63.2 125,30'/><path fill='%23FFFFFF' d='M125,52.1L66.8,182.6h21.7l11.7-29.2h49.4l11.7,29.2h21.7L125,52.1z M142,135.4H108l17-42.4L142,135.4z'/></svg>">
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Highlight.js Syntax Theme (Local with CDN fallback) -->
+  <link rel="stylesheet" href="highlight-dark.css" id="hljs-theme">
+
+  <!-- Core App Stylesheet -->
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+
+  <!-- Top Reading Progress Indicator -->
+  <div id="reading-progress-bar" class="reading-progress-bar"></div>
+
+  <!-- Global Header / Navbar -->
+  <header class="navbar">
+    <div class="nav-left">
+      <button id="mobile-menu-toggle" class="nav-icon-btn mobile-only" aria-label="Toggle navigation drawer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+
+      <a href="/README.md" class="brand-link" id="brand-link">
+        <div class="brand-logo">
+          <svg viewBox="0 0 250 250" width="28" height="28">
+            <polygon fill="#DD0031" points="125,30 125,30 125,30 31.9,63.2 46.1,186.3 125,230 125,230 125,230 203.9,186.3 218.1,63.2"/>
+            <polygon fill="#C3002F" points="125,30 125,52.2 125,52.1 125,153.4 125,153.4 125,230 125,230 203.9,186.3 218.1,63.2 125,30"/>
+            <path fill="#FFFFFF" d="M125,52.1L66.8,182.6h21.7l11.7-29.2h49.4l11.7,29.2h21.7L125,52.1z M142,135.4H108l17-42.4L142,135.4z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Angular Senior Prep</span>
+          <span class="brand-badge">5+ YOE Guide</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Quick Search Input Trigger -->
+    <div class="nav-center">
+      <button id="search-trigger-btn" class="search-trigger">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <span class="search-placeholder">Search 56 topics & guides...</span>
+        <kbd class="search-shortcut">⌘K</kbd>
+      </button>
+    </div>
+
+    <div class="nav-right">
+      <!-- Font Size Adjuster -->
+      <div class="font-size-controls" title="Adjust Font Size">
+        <button id="font-decrease-btn" class="nav-icon-btn small-btn" title="Decrease font size">A-</button>
+        <button id="font-increase-btn" class="nav-icon-btn small-btn" title="Increase font size">A+</button>
+      </div>
+
+      <!-- Copy URL Button -->
+      <button id="share-link-btn" class="nav-icon-btn" title="Copy Document Link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
+
+      <!-- Theme Switcher (Dark / Light) -->
+      <button id="theme-toggle-btn" class="nav-icon-btn" title="Toggle Light / Dark Mode">
+        <svg id="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <svg id="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-layout">
+    
+    <!-- Left Navigation Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      
+      <!-- Progress Bar Tracker -->
+      <div class="sidebar-progress-card">
+        <div class="progress-info">
+          <span class="progress-title">Readiness Tracker</span>
+          <span id="progress-percent" class="progress-percent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+        </div>
+        <div class="progress-subtext">
+          <span id="progress-count">0 / 56 topics completed</span>
+        </div>
+      </div>
+
+      <!-- Quick Filter Search for Topics -->
+      <div class="sidebar-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="sidebar-filter-input" placeholder="Filter topics..." autocomplete="off">
+        <button id="sidebar-filter-clear" class="clear-btn" style="display: none;">&times;</button>
+      </div>
+
+      <!-- Navigation Tree Items -->
+      <nav id="sidebar-nav" class="sidebar-nav" aria-label="Documentation navigation">
+        <!-- Rendered dynamically by viewer.js -->
+        <div class="sidebar-loading">Loading topics index...</div>
+      </nav>
+    </aside>
+
+    <!-- Center Document Container -->
+    <main class="main-content" id="main-content">
+      
+      <!-- Breadcrumbs -->
+      <div class="breadcrumbs" id="breadcrumbs">
+        <span>Angular Senior Prep</span> &rsaquo; <span id="breadcrumb-category">Overview</span> &rsaquo; <span id="breadcrumb-doc">README.md</span>
+      </div>
+
+      <!-- Document Header Hero Card -->
+      <div class="doc-hero" id="doc-hero">
+        <div class="hero-top-row">
+          <span class="hero-category-badge" id="hero-category-badge">Overview</span>
+          <span class="hero-reading-time" id="hero-reading-time">5 min read</span>
+          <span class="hero-word-count" id="hero-word-count">1,200 words</span>
+        </div>
+        
+        <h1 class="hero-title" id="hero-title">Angular Senior Interview Preparation Knowledge Base</h1>
+        <p class="hero-description" id="hero-description">Targeted for 5+ years experienced frontend engineers preparing for Senior Angular and Architect roles.</p>
+        
+        <div class="hero-actions">
+          <button id="toggle-complete-btn" class="hero-btn primary-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            <span id="toggle-complete-text">Mark as Completed</span>
+          </button>
+          
+          <button id="copy-markdown-btn" class="hero-btn secondary-btn" title="Copy raw Markdown text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>Copy Raw Markdown</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Markdown Render Output Container -->
+      <article class="markdown-body" id="markdown-body">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Rendering documentation...</p>
+        </div>
+      </article>
+
+      <!-- Bottom Prev / Next Navigation -->
+      <nav class="pagination-nav" id="pagination-nav">
+        <a href="#" id="prev-doc-btn" class="page-nav-card prev-card" style="visibility: hidden;">
+          <span class="page-nav-sub">← Previous Topic</span>
+          <span class="page-nav-title" id="prev-doc-title"></span>
+        </a>
+        <a href="#" id="next-doc-btn" class="page-nav-card next-card" style="visibility: hidden;">
+          <span class="page-nav-sub">Next Topic →</span>
+          <span class="page-nav-title" id="next-doc-title"></span>
+        </a>
+      </nav>
+
+      <!-- Document Footer -->
+      <footer class="doc-footer">
+        <p>Angular Senior Interview Preparation Guide • Angular 18–22, Signals, RxJS, Security & System Design</p>
+        <p class="footer-sub">Verified: October 2026 • Local Documentation Viewer</p>
+      </footer>
+    </main>
+
+    <!-- Right "On This Page" Table of Contents -->
+    <aside id="toc-sidebar" class="toc-sidebar">
+      <div class="toc-sticky-container">
+        <div class="toc-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>ON THIS PAGE</span>
+        </div>
+        <nav id="toc-list" class="toc-list" aria-label="Table of contents">
+          <!-- Injected dynamically by viewer.js -->
+        </nav>
+        
+        <div class="toc-actions">
+          <button id="back-to-top-btn" class="toc-action-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+            <span>Back to top</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Search Modal Overlay (Cmd+K) -->
+  <div id="search-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="modal-search-input" placeholder="Search topics, questions, code examples..." autocomplete="off">
+        <button id="modal-close-btn" class="clear-btn">&times;</button>
+      </div>
+
+      <div class="modal-results" id="modal-results">
+        <div class="modal-hint">Type keywords to search across all 56 interview preparation files.</div>
+      </div>
+
+      <div class="modal-footer">
+        <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+        <span><kbd>ENTER</kbd> to select</span>
+        <span><kbd>ESC</kbd> to close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Popup -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Embedded Manifest (Works offline without server) -->
+  <script src="docs-manifest.js"></script>
+
+  <!-- Markdown Parser & Syntax Highlighter (Local first, CDN fallback) -->
+  <script src="marked.min.js"></script>
+  <script src="highlight.min.js"></script>
+
+  <!-- Application Logic -->
+  <script src="viewer.js"></script>
+
+</body>
+</html>

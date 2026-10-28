@@ -1,0 +1,21 @@
+{
+  "name": "angular-senior-interview-prep-viewer",
+  "version": "1.0.0",
+  "description": "Production Documentation Viewer & Knowledge Base Web Application for Senior Angular Interview Prep",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js",
+    "build:manifest": "node generate-manifest.js"
+  },
+  "keywords": [
+    "angular",
+    "senior-interview",
+    "documentation-viewer",
+    "system-design",
+    "rxjs",
+    "signals"
+  ],
+  "author": "Antigravity Pair Programmer",
+  "license": "MIT"
+}
